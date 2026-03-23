@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3,max-content);
+            column-gap: 5px;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>何でもキャラソート</title>
+</head>
+
+<body>
+    <h1>何でもキャラソート</h1>
+
+    <section id="setup-section">
+        <div>
+            <label for="entries">エントリー(1行1要素)</label><br>
+            <textarea id="entries" rows="15" cols="40"></textarea>
+        </div>
+        <div>
+            <label for="k-input">上位k件のみソート(0=全件)</label>
+            <input type="number" id="k-input" value="0" min="0" style="width: 50px;">
+        </div>
+        <div>
+            <label for="d-input">一度に比較する件数</label>
+            <input type="number" id="d-input" value="2" min="2" style="width: 50px;">
+        </div>
+        <div>
+            <button id="start-stop-btn">開始</button>
+        </div>
+    </section>
+
+    <section id="sort-section">
+        <h2>比較</h2>
+        <div id="status">エントリーを入力して「開始」を押してください</div>
+        <div id="compare-area">
+            <div id="compare-grid" class="grid"></div>
+            <button id="submit-btn" disabled>決定</button>
+        </div>
+    </section>
+
+    <section id="result-section">
+        <h2>結果</h2>
+        <textarea id="result-area" rows="15" cols="40" readonly></textarea>
+    </section>
+
+    <script src="./js/charasort.js"></script>
+</body>
+
+</html>
