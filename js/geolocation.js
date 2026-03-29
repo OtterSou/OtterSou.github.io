@@ -26,8 +26,9 @@ const COMPASS = [
 ];
 
 const LOCATION_OPTIONS = {
+    maximumAge: 1000,
     enableHighAccuracy: true,
-}
+};
 
 function deg2dms(deg) {
     let x = Math.round(Math.abs(deg) * 36000);
@@ -74,15 +75,16 @@ const GPS = {
     onSuccess: function (pos) {
         GPS.params = pos.coords.toJSON();
         GPS.params.timestamp = pos.timestamp;
-        let dt = null;
         let dh = null;
-        if (GPS.lastParams != null) {
-            dt = (GPS.params.timestamp - GPS.lastParams.timestamp) / 1000
+        if (GPS.lastParams == null) {
+            GPS.params.dt = null;
+        } else {
+            GPS.params.dt = (GPS.params.timestamp - GPS.lastParams.timestamp) / 1000;
             dh = distance(GPS.lastParams, GPS.params);
         };
         GPS.params.realSpeed = GPS.params.speed != null;
         if (GPS.params.speed == null && dh != null) {
-            GPS.params.speed = dh.distance / dt;
+            GPS.params.speed = dh.distance / GPS.params.dt;
         };
         GPS.params.realHeading = GPS.params.heading != null;
         if (GPS.params.heading == null && dh != null) {
@@ -120,18 +122,18 @@ const GPS = {
         // speed
         parts.splice(0);
         if (GPS.params.speed == null) {
-            parts.push('-')
+            parts.push('-');
         } else {
             if (GPS.params.heading != null && GPS.params.speed >= 1.0) {
                 parts.push(GPS.params.heading.toFixed() + '°');
                 let compass = COMPASS[Math.round(GPS.params.heading / 22.5)];
                 parts.push(' (' + compass + ')');
                 parts.push(GPS.params.realHeading ? ' ' : '* ');
-            }
+            };
             parts.push((GPS.params.speed / speedUnit.scale).toFixed(1));
             parts.push(GPS.params.realSpeed ? ' ' : '* ');
-        }
-        spanSpeed.textContent = parts.join('')
+        };
+        spanSpeed.textContent = parts.join('');
 
         // altitude
         parts.splice(0);
@@ -142,8 +144,8 @@ const GPS = {
             if (GPS.params.altitudeAccuracy != null) {
                 parts.push(' ± ' + (GPS.params.altitudeAccuracy / altUnit.scale).toFixed(1));
             };
-        }
-        spanAlt.textContent = parts.join('')
+        };
+        spanAlt.textContent = parts.join('');
     },
 };
 
