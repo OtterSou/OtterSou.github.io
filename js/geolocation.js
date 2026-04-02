@@ -140,9 +140,9 @@ const GPS = {
         if (GPS.params.altitude == null) {
             parts.push('-');
         } else {
-            parts.push((GPS.params.altitude / altUnit.scale).toFixed(1));
+            parts.push((GPS.params.altitude / altUnit.scale).toFixed());
             if (GPS.params.altitudeAccuracy != null) {
-                parts.push(' ± ' + (GPS.params.altitudeAccuracy / altUnit.scale).toFixed(1));
+                parts.push(' ± ' + (GPS.params.altitudeAccuracy / altUnit.scale).toFixed());
             };
         };
         spanAlt.textContent = parts.join('');
