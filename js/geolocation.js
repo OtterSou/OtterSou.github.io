@@ -12,13 +12,13 @@ const selRef = document.getElementById('ref-sel');
 const canvas = document.getElementById('canvas');
 
 const UNITS = {
-    SPEED: {
+    speed: {
         mps: { label: 'm/s', scale: 1.0 },
         kph: { label: 'km/h', scale: 1 / 3.6 },
         mph: { label: 'mph', scale: 1.609344 / 3.6 },
         kn: { label: 'knot', scale: 1.852 / 3.6 },
     },
-    ALT: {
+    alt: {
         m: { label: 'm', scale: 1.0 },
         ft: { label: 'ft', scale: 0.3048 },
     },
@@ -147,7 +147,7 @@ const EGM2008 = {
     getUndulation: function (latlon) {
         const txy = latlon2tile(latlon, 5);
         if (txy.ty < 0 || txy.ty >= 32) {
-            throw new Error('latitude outside XYZ tile range')
+            return Promise.reject(new Error('latitude outside XYZ tile range'));
         }
         return this.fetch_xy(txy.tx, txy.ty).then(
             tile => tile[txy.py][txy.px]
@@ -210,8 +210,8 @@ const GPS = {
         if (GPS.params == null) return;
         const params = GPS.params;
         const parts = [];
-        let speedUnit = UNITS.SPEED[selSpeed.value];
-        let altUnit = UNITS.ALT[selAlt.value];
+        let speedUnit = UNITS.speed[selSpeed.value];
+        let altUnit = UNITS.alt[selAlt.value];
 
         // latlon
         parts.push(deg2dms(params.latitude));
@@ -268,7 +268,7 @@ const GPS = {
                         altUnit.label, otherRef];
                     spanAlt2.textContent = parts.join(' ');
                 }).catch(e => {
-                    spanAlt2.textContent = '-';
+                    spanAlt2.textContent = ', -';
                 });
             };
         };
@@ -281,7 +281,9 @@ const GPS = {
                 longitude: lon,
                 altitude: alt,
                 accuracy: 100,
-                altitudeAccuracy: null
+                altitudeAccuracy: null,
+                heading: null,
+                speed: null,
             },
         }
         params.toJSON = () => params;
@@ -289,16 +291,16 @@ const GPS = {
     },
 };
 
-for (const k in UNITS.SPEED) {
+for (const k in UNITS.speed) {
     const elem = document.createElement('option');
     elem.value = k;
-    elem.textContent = UNITS.SPEED[k].label;
+    elem.textContent = UNITS.speed[k].label;
     selSpeed.appendChild(elem);
 }
-for (const k in UNITS.ALT) {
+for (const k in UNITS.alt) {
     const elem = document.createElement('option');
     elem.value = k;
-    elem.textContent = UNITS.ALT[k].label;
+    elem.textContent = UNITS.alt[k].label;
     selAlt.appendChild(elem);
 }
 // GPS.toggleActive();
