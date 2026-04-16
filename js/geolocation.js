@@ -71,19 +71,16 @@ function latlon2tile(latlon, z) {
 const CachedRequest = {
     cache: new Map(),
     fetch: function (url) {
-        if (this.cache.has(url)) {
-            return this.cache.get(url);
+        if (!this.cache.has(url)) {
+            console.log('fetch', url);
+            const promise = fetch(url)
+                .catch(err => {
+                    this.cache.delete(url);
+                    throw err;
+                });
+            this.cache.set(url, promise);
         };
-        const promise = fetch(url)
-            .then(response => {
-                return response;
-            })
-            .catch(err => {
-                this.cache.delete(url);
-                throw err;
-            });
-        this.cache.set(url, promise);
-        return promise;
+        return this.cache.get(url).then(res => res.clone());
     },
 };
 
