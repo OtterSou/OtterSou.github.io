@@ -47,24 +47,26 @@ function deg2dms(deg) {
 };
 
 function distance(param1, param2) {
-    const R = 637100; // mean radius
+    const R = 6371008; // mean radius
     let dlat = (param2.latitude - param1.latitude) * Math.PI / 180;
     let mlat = (param1.latitude + param2.latitude) * Math.PI / 180;
     let dlon = (param2.longitude - param1.longitude) * Math.PI / 180 * Math.cos(mlat);
-    let distance = R * Math.hypot(dlat, dlon * Math.cos(mlat));
+    let distance = R * Math.hypot(dlon, dlat);
     let heading = (Math.atan2(dlon, dlat) * 180 / Math.PI + 360) % 360;
     return { distance: distance, heading: heading };
 }
 
 function latlon2tile(latlon, z) {
-    let x = Math.floor((latlon.longitude / 360 + 0.5) * 2 ** z * 256);
-    let y = Math.floor((0.5 - Math.asinh(Math.tan(latlon.latitude * Math.PI / 180)) / (2 * Math.PI))
-        * 2 ** z * 256);
+    let wx = (latlon.longitude / 360 + 0.5) * 2 ** z * 256;
+    let wy = (0.5 - Math.asinh(Math.tan(latlon.latitude * Math.PI / 180)) / (2 * Math.PI))
+        * 2 ** z * 256;
+    let tx = Math.floor(wx / 256);
+    let ty = Math.floor(wy / 256);
     return {
-        tx: Math.floor(x / 256),
-        ty: Math.floor(y / 256),
-        px: x % 256,
-        py: y % 256,
+        x: tx,
+        y: ty,
+        px: Math.floor(wx - tx * 256),
+        py: Math.floor(wy - ty * 256),
     };
 }
 
@@ -143,10 +145,10 @@ const EGM2008 = {
     },
     getUndulation: function (latlon) {
         const txy = latlon2tile(latlon, 5);
-        if (txy.ty < 0 || txy.ty >= 32) {
+        if (txy.y < 0 || txy.y >= 32) {
             return Promise.reject(new Error('latitude outside XYZ tile range'));
         }
-        return this.fetch_xy(txy.tx, txy.ty).then(
+        return this.fetch_xy(txy.x, txy.y).then(
             tile => tile[txy.py][txy.px]
         )
     },
@@ -155,7 +157,6 @@ const EGM2008 = {
 const GPS = {
     isActive: false,
     id: null,
-    lastParams: null,
     params: null,
     toggleActive: function () {
         if (this.isActive) {
@@ -175,11 +176,11 @@ const GPS = {
         const params = pos.toJSON().coords;
         params.timestamp = pos.timestamp;
         let dh = null;
-        if (GPS.lastParams == null) {
+        if (GPS.params == null) {
             params.dt = null;
         } else {
-            params.dt = (params.timestamp - GPS.lastParams.timestamp) / 1000;
-            dh = distance(GPS.lastParams, params);
+            params.dt = (params.timestamp - GPS.params.timestamp) / 1000;
+            dh = distance(GPS.params, params);
         };
         params.realSpeed = params.speed != null;
         if (params.speed == null && dh != null) {
@@ -191,7 +192,6 @@ const GPS = {
         };
         params.undulation = EGM2008.getUndulation(params);
         console.log(params);
-        GPS.lastParams = GPS.params;
         GPS.params = params;
         GPS.updateDisplay();
     },
