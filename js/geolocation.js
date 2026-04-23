@@ -156,6 +156,7 @@ const EGM2008 = {
 }
 
 const AddressFinder = {
+    lastFeature: null,
     isPointInPolygon: function (x, y, poly) {
         let wn = 0;
         let p1 = poly[0];
@@ -177,25 +178,35 @@ const AddressFinder = {
         }
         return wn != 0;
     },
-    findFeatureFromTile: function (lat, lon, tile) {
-        if (tile == null) return null;
-        const features = tile.features
-        for (const feat of features) {
-            let coord = feat.geometry.coordinates
-            if (feat.geometry.type != 'MultiPolygon') {
-                coord = [coord];
+    isPointInFeature: function (x, y, feat) {
+        let coord = feat.geometry.coordinates;
+        if (feat.geometry.type != 'MultiPolygon') {
+            coord = [coord];
+        };
+        for (const hpoly of coord) {
+            let hit = this.isPointInPolygon(x, y, hpoly[0]);
+            for (let i = 1; hit && i < hpoly.length; i++) {
+                hit = !this.isPointInPolygon(x, y, hpoly[i]);
             }
-            for (const hpoly of coord) {
-                let hit = this.isPointInPolygon(lon, lat, hpoly[0]);
-                for (let j = 1; hit && j < hpoly.length; j++) {
-                    hit = !this.isPointInPolygon(lon, lat, hpoly[j]);
-                }
-                if (hit) return feat;
-            }
+            if (hit) return true;
         }
-        return null;
+        return false;
+    },
+    formatFeature: function (feat) {
+        if (feat == null) {
+            return '-';
+        } else {
+            const props = feat.properties;
+            return `<ruby>${props.pref}<rt>${props.pref_kana}</rt></ruby> 
+<ruby>${props.muni}<rt>${props.muni_kana}</rt></ruby>
+<ruby>${props.LV01}<rt>${props.Lv01_kana}</rt></ruby>`;
+        };
     },
     findAddress: function (latlon) {
+        const [lat, lon] = [latlon.latitude, latlon.longitude];
+        if (this.lastFeature != null && this.isPointInFeature(lon, lat, this.lastFeature)) {
+            return Promise.resolve(this.lastFeature).then(this.formatFeature);
+        };
         const txy = latlon2tile(latlon, 14);
         const url = `https://cyberjapandata.gsi.go.jp/xyz/lv01_plg/14/${txy.x}/${txy.y}.geojson`;
         // const url = './6451.geojson';
@@ -207,15 +218,16 @@ const AddressFinder = {
                     throw new Error('failed to fetch address tile');
                 };
             })
-            .then(tile => this.findFeatureFromTile(latlon.latitude, latlon.longitude, tile))
-            .then(feat => {
-                if (feat == null) {
-                    return null;
-                } else {
-                    const props = feat.properties;
-                    return `${props.pref} ${props.muni} ${props.LV01}`
+            .then(tile => {
+                if (tile == null) return null;
+                for (const feat of tile.features) {
+                    if (this.isPointInFeature(lon, lat, feat)) {
+                        this.lastFeature = feat;
+                        return feat;
+                    };
                 };
             })
+            .then(this.formatFeature)
             .catch(console.error);
     },
 }
@@ -345,14 +357,15 @@ const GPS = {
             };
         };
 
+        spanAddress.hidden = !cbAddress.checked;
         // address
         if (!cbAddress.checked || params.address == null) {
-            spanAddress.textContent = '';
+            spanAddress.textContent = '-';
         } else {
             params.address.then(addr => {
-                spanAddress.textContent = addr;
+                spanAddress.innerHTML = addr;
             }).catch(e => {
-                spanAddress.textContent = '';
+                spanAddress.textContent = '-';
 
             })
         }
