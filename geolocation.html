@@ -17,6 +17,9 @@
             <option value="geoid">Geoid</option>
             <option value="ellipsoid">Ellipsoid</option>
         </select><span id="alt2"></span><br>
+        <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();">
+        <label for="address-cb"><b>Address</b></label><b>:</b>
+        <span id="address"></span>
     </p>
     <script src="./js/geolocation.js"></script>
 </body>

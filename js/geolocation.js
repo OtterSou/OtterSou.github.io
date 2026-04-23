@@ -9,6 +9,8 @@ const spanAlt = document.getElementById('alt');
 const selAlt = document.getElementById('alt-sel');
 const spanAlt2 = document.getElementById('alt2');
 const selRef = document.getElementById('ref-sel');
+const cbAddress = document.getElementById('address-cb');
+const spanAddress = document.getElementById('address');
 
 const UNITS = {
     speed: {
@@ -153,6 +155,71 @@ const EGM2008 = {
     },
 }
 
+const AddressFinder = {
+    isPointInPolygon: function (x, y, poly) {
+        let wn = 0;
+        let p1 = poly[0];
+        let p2 = null;
+        for (let i = 1; i < poly.length; i++) {
+            p2 = poly[i];
+            if (p1[1] <= y && p2[1] > y) {
+                let t = (y - p1[1]) / (p2[1] - p1[1]);
+                if (x < p1[0] + t * (p2[0] - p1[0])) {
+                    wn++;
+                }
+            } else if (p1[1] > y && p2[1] <= y) {
+                let t = (y - p1[1]) / (p2[1] - p1[1]);
+                if (x < p1[0] + t * (p2[0] - p1[0])) {
+                    wn--;
+                }
+            }
+            p1 = p2;
+        }
+        return wn != 0;
+    },
+    findFeatureFromTile: function (lat, lon, tile) {
+        if (tile == null) return null;
+        const features = tile.features
+        for (const feat of features) {
+            let coord = feat.geometry.coordinates
+            if (feat.geometry.type != 'MultiPolygon') {
+                coord = [coord];
+            }
+            for (const hpoly of coord) {
+                let hit = this.isPointInPolygon(lon, lat, hpoly[0]);
+                for (const j = 1; hit && j < hpoly.length; j++) {
+                    hit = !this.isPointInPolygon(lon, lat, hpoly[j]);
+                }
+                if (hit) return feat;
+            }
+        }
+        return null;
+    },
+    findAddress: function (latlon) {
+        const txy = latlon2tile(latlon, 14);
+        const url = `https://cyberjapandata.gsi.go.jp/xyz/lv01_plg/14/${txy.x}/${txy.y}.geojson`;
+        // const url = './6451.geojson';
+        return CachedRequest.fetch(url)
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('failed to fetch address tile');
+                };
+            })
+            .then(tile => this.findFeatureFromTile(latlon.latitude, latlon.longitude, tile))
+            .then(feat => {
+                if (feat == null) {
+                    return null;
+                } else {
+                    const props = feat.properties;
+                    return [props.pref, props.muni, props.LV01].join(' ');
+                };
+            })
+            .catch(err => null);
+    },
+}
+
 const GPS = {
     isActive: false,
     id: null,
@@ -190,9 +257,14 @@ const GPS = {
             params.heading = dh.heading;
         };
         if (selRef.value == 'none') {
-            params.undulation = Promise.reject();
+            params.undulation = null;
         } else {
             params.undulation = EGM2008.getUndulation(params);
+        }
+        if (cbAddress.checked) {
+            params.address = AddressFinder.findAddress(params);
+        } else {
+            params.address = null;
         }
         console.log(params);
         GPS.params = params;
@@ -251,7 +323,7 @@ const GPS = {
             };
             spanAlt.textContent = parts.join(' ');
 
-            if (selRef.value == 'none') {
+            if (selRef.value == 'none' || params.undulation == null) {
                 spanAlt2.textContent = '';
             } else {
                 params.undulation.then(und => {
@@ -272,6 +344,19 @@ const GPS = {
                 });
             };
         };
+
+        // address
+        if (!cbAddress.checked || params.address == null) {
+            spanAddress.textContent = '';
+        } else {
+            params.address.then(addr => {
+                spanAddress.textContent = addr;
+            }).catch(e => {
+                spanAddress.textContent = '';
+
+            })
+        }
+
     },
     moveTo: function (lat, lon, alt = null) {
         const params = {
