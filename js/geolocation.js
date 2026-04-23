@@ -9,7 +9,6 @@ const spanAlt = document.getElementById('alt');
 const selAlt = document.getElementById('alt-sel');
 const spanAlt2 = document.getElementById('alt2');
 const selRef = document.getElementById('ref-sel');
-const canvas = document.getElementById('canvas');
 
 const UNITS = {
     speed: {
@@ -190,7 +189,11 @@ const GPS = {
         if (params.heading == null && dh != null) {
             params.heading = dh.heading;
         };
-        params.undulation = EGM2008.getUndulation(params);
+        if (selRef.value == 'none') {
+            params.undulation = Promise.reject();
+        } else {
+            params.undulation = EGM2008.getUndulation(params);
+        }
         console.log(params);
         GPS.params = params;
         GPS.updateDisplay();
@@ -265,7 +268,7 @@ const GPS = {
                         altUnit.label, otherRef];
                     spanAlt2.textContent = parts.join(' ');
                 }).catch(e => {
-                    spanAlt2.textContent = ', -';
+                    spanAlt2.textContent = '';
                 });
             };
         };
