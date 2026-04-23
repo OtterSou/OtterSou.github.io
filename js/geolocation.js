@@ -187,7 +187,7 @@ const AddressFinder = {
             }
             for (const hpoly of coord) {
                 let hit = this.isPointInPolygon(lon, lat, hpoly[0]);
-                for (const j = 1; hit && j < hpoly.length; j++) {
+                for (let j = 1; hit && j < hpoly.length; j++) {
                     hit = !this.isPointInPolygon(lon, lat, hpoly[j]);
                 }
                 if (hit) return feat;
@@ -213,10 +213,10 @@ const AddressFinder = {
                     return null;
                 } else {
                     const props = feat.properties;
-                    return [props.pref, props.muni, props.LV01].join(' ');
+                    return `${props.pref} ${props.muni} ${props.LV01}`
                 };
             })
-            .catch(err => null);
+            .catch(console.error);
     },
 }
 
