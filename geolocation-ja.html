@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <title>GPS現在地</title>
+</head>
+
+<body>
+    <h1>GPS現在地</h1>
+    <div><button id="start-stop-btn" onclick="GPS.toggleActive();">Start</button></div>
+    <p>
+        <span id="latlon" style="white-space: pre-line;">Start</span><br>
+        <b>速度:</b> <span id="speed"></span><br>
+        <span id="alt1"></span><span id="alt2"></span><br>
+        <span id="address" style="line-height: 2.5;" hidden></span>
+    </p>
+    <p>
+        単位: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
+        <select id="length-sel" onchange="GPS.updateDisplay();"></select>
+        <br>
+        高度補正:
+        <select id="ref-sel" onchange="GPS.updateDisplay();">
+            <option value="none">補正なし</option>
+            <option value="geoid">標高 → 楕円体高</option>
+            <option value="ellipsoid">楕円体高 → 標高</option>
+        </select><br>
+        <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();">
+        <label for="address-cb">住所を表示</label>
+    </p>
+    <p>
+        ジオイドモデル: <a href="https://earth-info.nga.mil/">アメリカ国家地理空間情報局</a> EGM2008を<a href="https://github.com/OtterSou/tile">XYZタイルに加工</a><br>
+        住所データ: <a href="https://www.gsi.go.jp/">国土地理院</a> <a href="https://maps.gsi.go.jp/">地理院地図</a> 住所タイル<br>
+        住所は正確な所属を示すとは限りません。
+    </p>
+    <script src="./js/geolocation-ja.js"></script>
+</body>
+
+</html>

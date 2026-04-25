@@ -25,11 +25,11 @@ const UNITS = {
     },
 };
 const COMPASS = [
-    'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N',
+    '北','北北東','北東','東北東','東','東南東','南東','南南東',
+    '南','南南西','南西','西南西','西','西北西','北西','北北西','北',
 ];
 const REFS = {
-    none: 'Height', geoid: 'Altitude', ellipsoid: 'Ellipsoidal',
+    none: '高度', geoid: '標高', ellipsoid: '楕円体高',
 }
 
 const LOCATION_OPTIONS = {
@@ -249,7 +249,7 @@ const GPS = {
             this.isActive = true;
             this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, LOCATION_OPTIONS);
             startStopBtn.textContent = 'Stop';
-            spanLatLon.textContent = 'Waiting for a position...';
+            spanLatLon.textContent = '現在地取得中…';
             console.log('GPS started');
         }
     },
@@ -371,12 +371,12 @@ const GPS = {
         spanAddress.hidden = !cbAddress.checked;
         // address
         if (params.address == null) {
-            spanAddress.innerHTML = '<b>Address:</b> -';
+            spanAddress.innerHTML = '<b>住所:</b> -';
         } else {
             params.address.then(addr => {
-                spanAddress.innerHTML = '<b>Address:</b> ' + addr;
+                spanAddress.innerHTML = '<b>住所:</b> ' + addr;
             }).catch(e => {
-                spanAddress.innerHTML = '<b>Address:</b> -';
+                spanAddress.innerHTML = '<b>住所:</b> -';
             })
         }
 
