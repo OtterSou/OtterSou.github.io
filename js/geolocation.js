@@ -5,8 +5,8 @@ const startStopBtn = document.getElementById('start-stop-btn');
 const spanLatLon = document.getElementById('latlon');
 const spanSpeed = document.getElementById('speed');
 const selSpeed = document.getElementById('speed-sel');
-const spanAlt = document.getElementById('alt');
-const selAlt = document.getElementById('alt-sel');
+const selLength = document.getElementById('length-sel');
+const spanAlt1 = document.getElementById('alt1');
 const spanAlt2 = document.getElementById('alt2');
 const selRef = document.getElementById('ref-sel');
 const cbAddress = document.getElementById('address-cb');
@@ -28,6 +28,9 @@ const COMPASS = [
     'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
     'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N',
 ];
+const REFS = {
+    none: 'Height', geoid: 'Altitude', ellipsoid: 'Ellipsoidal',
+}
 
 const LOCATION_OPTIONS = {
     maximumAge: 1000,
@@ -48,7 +51,7 @@ function deg2dms(deg) {
 };
 
 function distance(param1, param2) {
-    const R = 6371008; // mean radius
+    const R = 6371009; // mean radius
     let dlat = (param2.latitude - param1.latitude) * Math.PI / 180;
     let mlat = (param1.latitude + param2.latitude) * Math.PI / 180;
     let dlon = (param2.longitude - param1.longitude) * Math.PI / 180 * Math.cos(mlat);
@@ -197,8 +200,8 @@ const AddressFinder = {
             return '-';
         } else {
             const props = feat.properties;
-            return `<ruby>${props.pref}<rt>${props.pref_kana}</rt></ruby> 
-<ruby>${props.muni}<rt>${props.muni_kana}</rt></ruby>
+            return `<ruby>${props.pref}<rt>${props.pref_kana}</rt></ruby> \
+<ruby>${props.muni}<rt>${props.muni_kana}</rt></ruby> \
 <ruby>${props.LV01}<rt>${props.Lv01_kana}</rt></ruby>`;
         };
     },
@@ -254,7 +257,7 @@ const GPS = {
         const params = pos.toJSON().coords;
         params.timestamp = pos.timestamp;
         let dh = null;
-        if (GPS.params == null) {
+        if (GPS.params == null || params.latitude == null || GPS.params.latitude == null) {
             params.dt = null;
         } else {
             params.dt = (params.timestamp - GPS.params.timestamp) / 1000;
@@ -285,9 +288,7 @@ const GPS = {
     onError: function (err) {
         console.error(err.code, err.message);
         spanLatLon.textContent = 'Error: ' + err.message;
-        GPS.params = null;
-        spanSpeed.textContent = '-';
-        spanAlt.textContent = '-';
+        GPS.moveTo();
     },
     updateDisplay: function () {
         // console.log('update');
@@ -295,23 +296,25 @@ const GPS = {
         const params = GPS.params;
         const parts = [];
         let speedUnit = UNITS.speed[selSpeed.value];
-        let altUnit = UNITS.alt[selAlt.value];
+        let lengthUnit = UNITS.alt[selLength.value];
 
         // latlon
-        parts.push(deg2dms(params.latitude));
-        parts.push(params.latitude >= 0 ? 'N' : 'S');
-        parts.push(' ');
-        parts.push(deg2dms(params.longitude));
-        parts.push(params.longitude >= 0 ? 'E' : 'W');
-        parts.push(' ± ' + (params.accuracy / altUnit.scale).toFixed() + ' ' + altUnit.label);
-        parts.push('\n');
-        parts.push(params.latitude.toFixed(5) + ', ' + params.longitude.toFixed(5));
-        spanLatLon.textContent = parts.join('');
+        if (params.latitude != null) {
+            parts.push(deg2dms(params.latitude));
+            parts.push(params.latitude >= 0 ? 'N' : 'S');
+            parts.push(' ');
+            parts.push(deg2dms(params.longitude));
+            parts.push(params.longitude >= 0 ? 'E' : 'W');
+            parts.push(' ± ' + (params.accuracy / lengthUnit.scale).toFixed() + ' ' + lengthUnit.label);
+            parts.push('\n');
+            parts.push(params.latitude.toFixed(5) + ', ' + params.longitude.toFixed(5));
+            spanLatLon.textContent = parts.join('');
+        };
 
         // speed
         parts.splice(0);
         if (params.speed == null) {
-            parts.push('-');
+            parts.push('- ' + speedUnit.label);
         } else {
             if (params.heading != null && params.speed >= 1.0) {
                 parts.push(params.heading.toFixed() + '°');
@@ -321,57 +324,64 @@ const GPS = {
             };
             parts.push((params.speed / speedUnit.scale).toFixed(1));
             parts.push(params.realSpeed ? ' ' : '* ');
+            parts.push(' ' + speedUnit.label);
         };
         spanSpeed.textContent = parts.join('');
 
         // altitude
         parts.splice(0);
+        parts.push(`<b>${REFS[selRef.value]}:</b> `)
         if (params.altitude == null) {
-            spanAlt.textContent = '-';
+            parts.push('- ' + lengthUnit.label);
         } else {
-            parts.push((GPS.params.altitude / altUnit.scale).toFixed());
+            parts.push((GPS.params.altitude / lengthUnit.scale).toFixed());
             if (GPS.params.altitudeAccuracy != null) {
-                parts.push('± ' + (GPS.params.altitudeAccuracy / altUnit.scale).toFixed());
+                parts.push(' ± ' + (GPS.params.altitudeAccuracy / lengthUnit.scale).toFixed());
             };
-            spanAlt.textContent = parts.join(' ');
-
-            if (selRef.value == 'none' || params.undulation == null) {
-                spanAlt2.textContent = '';
+            parts.push(' ' + lengthUnit.label);
+        };
+        if (selRef.value == 'none') {
+            spanAlt2.textContent = '';
+        } else {
+            parts.push(', <b>')
+            if (selRef.value == 'geoid') {
+                parts.push(REFS.ellipsoid);
             } else {
+                parts.push(REFS.geoid);
+            }
+            parts.push(':</b> ');
+            spanAlt2.textContent = `- ${lengthUnit.label}`;
+            if (params.altitude != null && params.undulation != null) {
                 params.undulation.then(und => {
+                    const parts = [];
                     let alt2 = params.altitude;
-                    let otherRef = '';
                     if (selRef.value == 'geoid') {
                         alt2 += und;
-                        otherRef = 'Ellipsoid';
                     } else {
                         alt2 -= und;
-                        otherRef = 'Geoid';
                     }
-                    const parts = [',', (alt2 / altUnit.scale).toFixed(),
-                        altUnit.label, otherRef];
-                    spanAlt2.textContent = parts.join(' ');
-                }).catch(e => {
-                    spanAlt2.textContent = '';
-                });
-            };
+                    parts.push((alt2 / lengthUnit.scale).toFixed());
+                    parts.push(' ' + lengthUnit.label);
+                    spanAlt2.innerHTML = parts.join('');
+                }).catch();
+            }
         };
+        spanAlt1.innerHTML = parts.join('');
 
         spanAddress.hidden = !cbAddress.checked;
         // address
-        if (!cbAddress.checked || params.address == null) {
-            spanAddress.textContent = '-';
+        if (params.address == null) {
+            spanAddress.innerHTML = '<b>Address:</b> -';
         } else {
             params.address.then(addr => {
-                spanAddress.innerHTML = addr;
+                spanAddress.innerHTML = '<b>Address:</b> ' + addr;
             }).catch(e => {
-                spanAddress.textContent = '-';
-
+                spanAddress.innerHTML = '<b>Address:</b> -';
             })
         }
 
     },
-    moveTo: function (lat, lon, alt = null) {
+    moveTo: function (lat = null, lon = null, alt = null) {
         const params = {
             timestamp: Date.now(),
             coords: {
@@ -399,6 +409,6 @@ for (const k in UNITS.alt) {
     const elem = document.createElement('option');
     elem.value = k;
     elem.textContent = UNITS.alt[k].label;
-    selAlt.appendChild(elem);
+    selLength.appendChild(elem);
 }
-// GPS.toggleActive();
+GPS.moveTo();

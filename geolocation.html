@@ -10,19 +10,26 @@
     <div><button id="start-stop-btn" onclick="GPS.toggleActive();">Start</button></div>
     <p>
         <span id="latlon" style="white-space: pre-line;">Press Start</span><br>
-        <b>Speed:</b> <span id="speed">-</span> <select id="speed-sel" onchange="GPS.updateDisplay();"></select><br>
-        <b>Altitude:</b> <span id="alt">-</span> <select id="alt-sel" onchange="GPS.updateDisplay();"></select>
-        <select id="ref-sel" onchange="GPS.updateDisplay();">
-            <option value="none">---</option>
-            <option value="geoid">Geoid</option>
-            <option value="ellipsoid">Ellipsoid</option>
-        </select><span id="alt2"></span><br>
-        <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();">
-        <label for="address-cb"><b>Address</b></label><b>:</b>
+        <b>Speed:</b> <span id="speed"></span><br>
+        <span id="alt1"></span><span id="alt2"></span><br>
         <span id="address" style="line-height: 2.5;" hidden></span>
     </p>
     <p>
-        Geoid height from EGM2008 by <a href="https://earth-info.nga.mil/">US National Geospatial-Intelligence Agency</a>
+        Units: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
+        <select id="length-sel" onchange="GPS.updateDisplay();"></select>
+        <br>
+        Height correction:
+        <select id="ref-sel" onchange="GPS.updateDisplay();">
+            <option value="none">No correction</option>
+            <option value="geoid">Altitude → Ellipsoidal</option>
+            <option value="ellipsoid">Ellipsoidal → Altitude</option>
+        </select><br>
+        <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();">
+        <label for="address-cb">Show address</label>
+    </p>
+    <p>
+        Geoid height from EGM2008 by <a href="https://earth-info.nga.mil/">US National Geospatial-Intelligence
+            Agency</a>
         (<a href="https://github.com/OtterSou/tile">converted to XYZ tiles</a>)<br>
         Address data from <a href="https://maps.gsi.go.jp/">GSI Maps</a> address tiles by
         <a href="https://www.gsi.go.jp/">Geospatial Information Authority of Japan</a>
