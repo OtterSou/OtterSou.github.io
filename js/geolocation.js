@@ -9,8 +9,6 @@ const selLength = document.getElementById('length-sel');
 const spanAlt1 = document.getElementById('alt1');
 const spanAlt2 = document.getElementById('alt2');
 const selRef = document.getElementById('ref-sel');
-const cbAddress = document.getElementById('address-cb');
-const spanAddress = document.getElementById('address');
 
 const UNITS = {
     speed: {
@@ -158,83 +156,6 @@ const EGM2008 = {
     },
 }
 
-const AddressFinder = {
-    lastFeature: null,
-    isPointInPolygon: function (x, y, poly) {
-        let wn = 0;
-        let p1 = poly[0];
-        let p2 = null;
-        for (let i = 1; i < poly.length; i++) {
-            p2 = poly[i];
-            if (p1[1] <= y && p2[1] > y) {
-                let t = (y - p1[1]) / (p2[1] - p1[1]);
-                if (x < p1[0] + t * (p2[0] - p1[0])) {
-                    wn++;
-                }
-            } else if (p1[1] > y && p2[1] <= y) {
-                let t = (y - p1[1]) / (p2[1] - p1[1]);
-                if (x < p1[0] + t * (p2[0] - p1[0])) {
-                    wn--;
-                }
-            }
-            p1 = p2;
-        }
-        return wn != 0;
-    },
-    isPointInFeature: function (x, y, feat) {
-        let coord = feat.geometry.coordinates;
-        if (feat.geometry.type != 'MultiPolygon') {
-            coord = [coord];
-        };
-        for (const hpoly of coord) {
-            let hit = this.isPointInPolygon(x, y, hpoly[0]);
-            for (let i = 1; hit && i < hpoly.length; i++) {
-                hit = !this.isPointInPolygon(x, y, hpoly[i]);
-            }
-            if (hit) return true;
-        }
-        return false;
-    },
-    formatFeature: function (feat) {
-        if (feat == null) {
-            return '-';
-        } else {
-            const props = feat.properties;
-            return `<ruby>${props.pref}<rt>${props.pref_kana}</rt></ruby> \
-<ruby>${props.muni}<rt>${props.muni_kana}</rt></ruby> \
-<ruby>${props.LV01}<rt>${props.Lv01_kana}</rt></ruby>`;
-        };
-    },
-    findAddress: function (latlon) {
-        const [lat, lon] = [latlon.latitude, latlon.longitude];
-        if (this.lastFeature != null && this.isPointInFeature(lon, lat, this.lastFeature)) {
-            return Promise.resolve(this.lastFeature).then(this.formatFeature);
-        };
-        const txy = latlon2tile(latlon, 14);
-        const url = `https://cyberjapandata.gsi.go.jp/xyz/lv01_plg/14/${txy.x}/${txy.y}.geojson`;
-        // const url = './6451.geojson';
-        return CachedRequest.fetch(url)
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('failed to fetch address tile');
-                };
-            })
-            .then(tile => {
-                if (tile == null) return null;
-                for (const feat of tile.features) {
-                    if (this.isPointInFeature(lon, lat, feat)) {
-                        this.lastFeature = feat;
-                        return feat;
-                    };
-                };
-            })
-            .then(this.formatFeature)
-            .catch(console.error);
-    },
-}
-
 const GPS = {
     isActive: false,
     id: null,
@@ -275,11 +196,6 @@ const GPS = {
             params.undulation = null;
         } else {
             params.undulation = EGM2008.getUndulation(params);
-        }
-        if (!cbAddress.checked || params.latitude == null) {
-            params.address = null;
-        } else {
-            params.address = AddressFinder.findAddress(params);
         }
         console.log(params);
         GPS.params = params;
@@ -367,19 +283,6 @@ const GPS = {
             }
         };
         spanAlt1.innerHTML = parts.join('');
-
-        spanAddress.hidden = !cbAddress.checked;
-        // address
-        if (params.address == null) {
-            spanAddress.innerHTML = '<b>Address:</b> -';
-        } else {
-            params.address.then(addr => {
-                spanAddress.innerHTML = '<b>Address:</b> ' + addr;
-            }).catch(e => {
-                spanAddress.innerHTML = '<b>Address:</b> -';
-            })
-        }
-
     },
     moveTo: function (lat = null, lon = null, alt = null) {
         const params = {

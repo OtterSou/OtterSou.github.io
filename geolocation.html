@@ -11,8 +11,7 @@
     <p>
         <span id="latlon" style="white-space: pre-line;">Press Start</span><br>
         <b>Speed:</b> <span id="speed"></span><br>
-        <span id="alt1"></span><span id="alt2"></span><br>
-        <span id="address" style="line-height: 2.5;" hidden></span>
+        <span id="alt1"></span><span id="alt2"></span>
     </p>
     <p>
         Units: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
@@ -24,8 +23,6 @@
             <option value="geoid">Altitude → Ellipsoidal</option>
             <option value="ellipsoid">Ellipsoidal → Altitude</option>
         </select><br>
-        <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();">
-        <label for="address-cb">Show address</label>
     </p>
     <p>
         Geoid height from EGM2008 by <a href="https://earth-info.nga.mil/">US National Geospatial-Intelligence
