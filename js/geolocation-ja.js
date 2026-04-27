@@ -4,13 +4,14 @@
 const startStopBtn = document.getElementById('start-stop-btn');
 const spanLatLon = document.getElementById('latlon');
 const spanSpeed = document.getElementById('speed');
-const selSpeed = document.getElementById('speed-sel');
-const selLength = document.getElementById('length-sel');
 const spanAlt1 = document.getElementById('alt1');
 const spanAlt2 = document.getElementById('alt2');
+const spanAddress = document.getElementById('address');
+const cbHighAcc = document.getElementById('highacc-cb');
+const selSpeed = document.getElementById('speed-sel');
+const selLength = document.getElementById('length-sel');
 const selRef = document.getElementById('ref-sel');
 const cbAddress = document.getElementById('address-cb');
-const spanAddress = document.getElementById('address');
 
 const UNITS = {
     speed: {
@@ -31,11 +32,6 @@ const COMPASS = [
 const REFS = {
     none: '高度', geoid: '標高', ellipsoid: '楕円体高',
 }
-
-const LOCATION_OPTIONS = {
-    maximumAge: 1000,
-    enableHighAccuracy: true,
-};
 
 function deg2dms(deg) {
     let x = Math.round(Math.abs(deg) * 36000);
@@ -240,17 +236,20 @@ const GPS = {
     id: null,
     params: null,
     toggleActive: function () {
+        this.isActive = !this.isActive;
+        cbHighAcc.disabled = this.isActive;
+        const options = {
+            enableHighAccuracy: cbHighAcc.checked
+        };
         if (this.isActive) {
-            this.isActive = false;
-            navigator.geolocation.clearWatch(this.id);
-            startStopBtn.textContent = 'Start';
-            console.log('GPS paused');
-        } else {
-            this.isActive = true;
-            this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, LOCATION_OPTIONS);
+            this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, options);
             startStopBtn.textContent = 'Stop';
             spanLatLon.textContent = '現在地取得中…';
             console.log('GPS started');
+        } else {
+            navigator.geolocation.clearWatch(this.id);
+            startStopBtn.textContent = 'Start';
+            console.log('GPS paused');
         }
     },
     onSuccess: function (pos) {
@@ -260,12 +259,12 @@ const GPS = {
         if (GPS.params == null || params.latitude == null || GPS.params.latitude == null) {
             params.dt = null;
         } else {
-            params.dt = (params.timestamp - GPS.params.timestamp) / 1000;
+            params.dt = params.timestamp - GPS.params.timestamp;
             dh = distance(GPS.params, params);
         };
         params.realSpeed = params.speed != null;
         if (params.speed == null && dh != null) {
-            params.speed = dh.distance / params.dt;
+            params.speed = dh.distance / (params.dt / 1000);
         };
         params.realHeading = params.heading != null;
         if (params.heading == null && dh != null) {

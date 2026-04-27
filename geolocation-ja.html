@@ -12,9 +12,10 @@
         <span id="latlon" style="white-space: pre-line;">Startを押してください</span><br>
         <b>速度:</b> <span id="speed"></span><br>
         <span id="alt1"></span><span id="alt2"></span><br>
-        <span id="address" style="line-height: 2.5;" hidden></span>
+        <span id="address" style="line-height: 2;" hidden></span>
     </p>
     <p>
+        <input type="checkbox" id="highacc-cb"><label for="highacc-cb">高精度</label><br>
         単位: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
         <select id="length-sel" onchange="GPS.updateDisplay();"></select><br>
         高度補正: <select id="ref-sel" onchange="GPS.updateDisplay();">
