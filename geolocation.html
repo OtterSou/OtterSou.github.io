@@ -14,11 +14,10 @@
         <span id="alt1"></span><span id="alt2"></span>
     </p>
     <p>
+        <input type="checkbox" id="highacc-cb"><label for="highacc-cb">High accuracy</label><br>
         Units: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
-        <select id="length-sel" onchange="GPS.updateDisplay();"></select>
-        <br>
-        Height correction:
-        <select id="ref-sel" onchange="GPS.updateDisplay();">
+        <select id="length-sel" onchange="GPS.updateDisplay();"></select><br>
+        Height correction: <select id="ref-sel" onchange="GPS.updateDisplay();">
             <option value="none">No correction</option>
             <option value="geoid">Altitude → Ellipsoidal</option>
             <option value="ellipsoid">Ellipsoidal → Altitude</option>
