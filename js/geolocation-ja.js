@@ -199,7 +199,6 @@ const AddressFinder = {
         if (tile == null) return null;
         for (const feat of tile.features) {
             if (this.isPointInFeature(x, y, feat)) {
-                this.last.feature = feat;
                 return feat;
             };
         };
