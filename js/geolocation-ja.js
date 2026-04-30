@@ -26,8 +26,8 @@ const UNITS = {
     },
 };
 const COMPASS = [
-    '北','北北東','北東','東北東','東','東南東','南東','南南東',
-    '南','南南西','南西','西南西','西','西北西','北西','北北西','北',
+    '北', '北北東', '北東', '東北東', '東', '東南東', '南東', '南南東',
+    '南', '南南西', '南西', '西南西', '西', '西北西', '北西', '北北西', '北',
 ];
 const REFS = {
     none: '高度', geoid: '標高', ellipsoid: '楕円体高',
@@ -155,7 +155,11 @@ const EGM2008 = {
 }
 
 const AddressFinder = {
-    lastFeature: null,
+    last: {
+        x: null,
+        y: null,
+        tile: null,
+    },
     isPointInPolygon: function (x, y, poly) {
         let wn = 0;
         let p1 = poly[0];
@@ -186,10 +190,20 @@ const AddressFinder = {
             let hit = this.isPointInPolygon(x, y, hpoly[0]);
             for (let i = 1; hit && i < hpoly.length; i++) {
                 hit = !this.isPointInPolygon(x, y, hpoly[i]);
-            }
+            };
             if (hit) return true;
-        }
+        };
         return false;
+    },
+    getFeatureInTile: function (x, y, tile) {
+        if (tile == null) return null;
+        for (const feat of tile.features) {
+            if (this.isPointInFeature(x, y, feat)) {
+                this.last.feature = feat;
+                return feat;
+            };
+        };
+        return null;
     },
     formatFeature: function (feat) {
         if (feat == null) {
@@ -202,13 +216,15 @@ const AddressFinder = {
         };
     },
     findAddress: function (latlon) {
-        const [lat, lon] = [latlon.latitude, latlon.longitude];
-        if (this.lastFeature != null && this.isPointInFeature(lon, lat, this.lastFeature)) {
-            return Promise.resolve(this.lastFeature).then(this.formatFeature);
-        };
+        const lat = latlon.latitude;
+        const lon = latlon.longitude;
         const txy = latlon2tile(latlon, 14);
+        if (!(txy.x >= 13786 && txy.x <= 15200 && txy.y >= 5857 && txy.y <= 7242)) {
+            return Promise.reject(new Error('ouside Japan'));
+        } else if (txy.x == this.last.x && txy.y == this.last.y) {
+            return Promise.resolve(this.getFeatureInTile(lon, lat, this.last.tile)).then(this.formatFeature);
+        };
         const url = `https://cyberjapandata.gsi.go.jp/xyz/lv01_plg/14/${txy.x}/${txy.y}.geojson`;
-        // const url = './6451.geojson';
         return CachedRequest.fetch(url)
             .then(res => {
                 if (res.ok) {
@@ -218,13 +234,10 @@ const AddressFinder = {
                 };
             })
             .then(tile => {
-                if (tile == null) return null;
-                for (const feat of tile.features) {
-                    if (this.isPointInFeature(lon, lat, feat)) {
-                        this.lastFeature = feat;
-                        return feat;
-                    };
-                };
+                this.last.x = txy.x;
+                this.last.y = txy.y;
+                this.last.tile = tile;
+                return this.getFeatureInTile(lon,lat,tile);
             })
             .then(this.formatFeature)
             .catch(console.error);
