@@ -2,6 +2,7 @@
 
 // DOM
 const startStopBtn = document.getElementById('start-stop-btn');
+const onceBtn = document.getElementById('once-btn');
 const spanLatLon = document.getElementById('latlon');
 const spanSpeed = document.getElementById('speed');
 const spanAlt1 = document.getElementById('alt1');
@@ -165,12 +166,32 @@ const GPS = {
         if (this.isActive) {
             this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, options);
             startStopBtn.textContent = 'Stop';
-            spanLatLon.textContent = 'Waiting for a position...';
+            onceBtn.disabled = true;
+            spanLatLon.textContent = 'Retrieving position...';
             console.log('GPS started');
         } else {
             navigator.geolocation.clearWatch(this.id);
             startStopBtn.textContent = 'Start';
+            onceBtn.disabled = false;
             console.log('GPS paused');
+        }
+    },
+    once: function() {
+        const options = {
+            enableHighAccuracy: cbHighAcc.checked
+        };
+        navigator.geolocation.getCurrentPosition(this.onSuccess,this.onerror,options);
+        startStopBtn.disabled = true;
+        onceBtn.disabled = true;
+        spanLatLon.textContent = 'Retrieving position...';
+        cbHighAcc.disabled = true;
+        console.log('GPS once');
+    },
+    onceEnd: function() {
+        if (startStopBtn.disabled) {
+            startStopBtn.disabled = false;
+            onceBtn.disabled = false;
+            cbHighAcc.disabled = false;
         }
     },
     onSuccess: function (pos) {
@@ -199,11 +220,13 @@ const GPS = {
         console.log(params);
         GPS.params = params;
         GPS.updateDisplay();
+        GPS.onceEnd();
     },
     onError: function (err) {
         console.error(err.code, err.message);
         spanLatLon.textContent = 'Error: ' + err.message;
         GPS.moveTo();
+        GPS.onceEnd();
     },
     updateDisplay: function () {
         // console.log('update');

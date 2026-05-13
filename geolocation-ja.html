@@ -7,9 +7,12 @@
 
 <body>
     <h1>GPS現在地</h1>
-    <div><button id="start-stop-btn" onclick="GPS.toggleActive();">Start</button></div>
+    <div>
+        <button id="start-stop-btn" onclick="GPS.toggleActive();">開始</button>
+        <button id="once-btn" onclick="GPS.once();">取得</button>
+    </div>
     <p>
-        <span id="latlon" style="white-space: pre-line;">Startを押してください</span><br>
+        <span id="latlon" style="white-space: pre-line;">上のボタンを押してください</span><br>
         <b>速度:</b> <span id="speed"></span><br>
         <span id="alt1"></span><span id="alt2"></span><br>
         <span id="address" style="line-height: 2;" hidden></span>

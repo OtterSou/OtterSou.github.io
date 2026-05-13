@@ -7,9 +7,12 @@
 
 <body>
     <h1>Geolocation / Speedometer</h1>
-    <div><button id="start-stop-btn" onclick="GPS.toggleActive();">Start</button></div>
+    <div>
+        <button id="start-stop-btn" onclick="GPS.toggleActive();">Start</button>
+        <button id="once-btn" onclick="GPS.once();">Once</button>
+    </div>
     <p>
-        <span id="latlon" style="white-space: pre-line;">Press Start</span><br>
+        <span id="latlon" style="white-space: pre-line;">Press a button above</span><br>
         <b>Speed:</b> <span id="speed"></span><br>
         <span id="alt1"></span><span id="alt2"></span>
     </p>
@@ -27,8 +30,6 @@
         Geoid height from EGM2008 by <a href="https://earth-info.nga.mil/">US National Geospatial-Intelligence
             Agency</a>
         (<a href="https://github.com/OtterSou/tile">converted to XYZ tiles</a>)<br>
-        Address data from <a href="https://maps.gsi.go.jp/">GSI Maps</a> address tiles by
-        <a href="https://www.gsi.go.jp/">Geospatial Information Authority of Japan</a>
     </p>
     <script src="./js/geolocation.js"></script>
 </body>

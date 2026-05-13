@@ -2,6 +2,7 @@
 
 // DOM
 const startStopBtn = document.getElementById('start-stop-btn');
+const onceBtn = document.getElementById('once-btn');
 const spanLatLon = document.getElementById('latlon');
 const spanSpeed = document.getElementById('speed');
 const spanAlt1 = document.getElementById('alt1');
@@ -236,7 +237,7 @@ const AddressFinder = {
                 this.last.x = txy.x;
                 this.last.y = txy.y;
                 this.last.tile = tile;
-                return this.getFeatureInTile(lon,lat,tile);
+                return this.getFeatureInTile(lon, lat, tile);
             })
             .then(this.formatFeature)
             .catch(console.error);
@@ -255,14 +256,34 @@ const GPS = {
         };
         if (this.isActive) {
             this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, options);
-            startStopBtn.textContent = 'Stop';
+            startStopBtn.textContent = '停止';
+            onceBtn.disabled = true;
             spanLatLon.textContent = '現在地取得中…';
             console.log('GPS started');
         } else {
             navigator.geolocation.clearWatch(this.id);
-            startStopBtn.textContent = 'Start';
+            startStopBtn.textContent = '開始';
+            onceBtn.disabled = false;
             console.log('GPS paused');
         }
+    },
+    once: function () {
+        const options = {
+            enableHighAccuracy: cbHighAcc.checked
+        };
+        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onerror, options);
+        startStopBtn.disabled = true;
+        onceBtn.disabled = true;
+        spanLatLon.textContent = '現在地取得中…';
+        cbHighAcc.disabled = true;
+        console.log('GPS once');
+    },
+    onceEnd: function () {
+        if (startStopBtn.disabled) {
+            startStopBtn.disabled = false;
+            onceBtn.disabled = false;
+            cbHighAcc.disabled = false;
+        };
     },
     onSuccess: function (pos) {
         const params = pos.toJSON().coords;
@@ -295,11 +316,13 @@ const GPS = {
         console.log(params);
         GPS.params = params;
         GPS.updateDisplay();
+        GPS.onceEnd();
     },
     onError: function (err) {
         console.error(err.code, err.message);
         spanLatLon.textContent = 'Error: ' + err.message;
         GPS.moveTo();
+        GPS.onceEnd();
     },
     updateDisplay: function () {
         // console.log('update');
