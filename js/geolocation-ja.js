@@ -350,15 +350,15 @@ const GPS = {
         if (params.speed == null) {
             parts.push('- ' + speedUnit.label);
         } else {
+            parts.push((params.speed / speedUnit.scale).toFixed(1));
+            parts.push(' ' + speedUnit.label);
+            parts.push(params.realSpeed ? '' : '*');
             if (params.heading != null && params.speed >= 1.0) {
-                parts.push(params.heading.toFixed() + '°');
+                parts.push(' ' + params.heading.toFixed() + '°');
                 let compass = COMPASS[Math.round(params.heading / 22.5)];
                 parts.push(' (' + compass + ')');
-                parts.push(params.realHeading ? ' ' : '* ');
+                parts.push(params.realHeading ? '' : '*');
             };
-            parts.push((params.speed / speedUnit.scale).toFixed(1));
-            parts.push(params.realSpeed ? ' ' : '* ');
-            parts.push(' ' + speedUnit.label);
         };
         spanSpeed.textContent = parts.join('');
 
