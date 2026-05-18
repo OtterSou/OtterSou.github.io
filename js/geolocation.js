@@ -266,9 +266,9 @@ const GPS = {
         // altitude
         parts.splice(0);
         if (cbRef.checked) {
-            parts.push('<b>Ellipsoidal</b>:')
+            parts.push('<b>Ellipsoidal:</b>')
         } else {
-            parts.push('<b>Altitude</b>:')
+            parts.push('<b>Altitude:</b>')
         };
         if (params.altitude == null) {
             parts.push('-');
@@ -280,7 +280,7 @@ const GPS = {
         };
         parts.push(lengthUnit.label);
         if (cbRef.checked) {
-            parts.push(', <b>Altitude</b>:')
+            parts.push(', <b>Altitude:</b>')
             spanAlt1.innerHTML = parts.join(' ');
             if (params.altitude != null && params.undulation != null) {
                 spanAlt2.textContent = 'loading';
