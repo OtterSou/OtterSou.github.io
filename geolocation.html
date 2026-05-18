@@ -14,17 +14,13 @@
     <p>
         <span id="latlon" style="white-space: pre-line;">Press a button above</span><br>
         <b>Speed:</b> <span id="speed"></span><br>
-        <span id="alt1"></span><span id="alt2"></span>
+        <span id="alt1"></span> <span id="alt2"></span>
     </p>
     <p>
         <input type="checkbox" id="highacc-cb"><label for="highacc-cb">High accuracy</label><br>
         Units: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
         <select id="length-sel" onchange="GPS.updateDisplay();"></select><br>
-        Height correction: <select id="ref-sel" onchange="GPS.updateDisplay();">
-            <option value="none">No correction</option>
-            <option value="geoid">Altitude → Ellipsoidal</option>
-            <option value="ellipsoid">Ellipsoidal → Altitude</option>
-        </select><br>
+        <input type="checkbox" id="ref-cb" onchange="GPS.updateDisplay();"><label for="ref-cb">Correct ellipsoidal height to altitude</label>
     </p>
     <p>
         Geoid height from EGM2008 by <a href="https://earth-info.nga.mil/">US National Geospatial-Intelligence

@@ -11,7 +11,7 @@ const spanAddress = document.getElementById('address');
 const cbHighAcc = document.getElementById('highacc-cb');
 const selSpeed = document.getElementById('speed-sel');
 const selLength = document.getElementById('length-sel');
-const selRef = document.getElementById('ref-sel');
+const cbRef = document.getElementById('ref-cb');
 const cbAddress = document.getElementById('address-cb');
 
 const UNITS = {
@@ -30,9 +30,6 @@ const COMPASS = [
     '北', '北北東', '北東', '東北東', '東', '東南東', '南東', '南南東',
     '南', '南南西', '南西', '西南西', '西', '西北西', '北西', '北北西', '北',
 ];
-const REFS = {
-    none: '高度', geoid: '標高', ellipsoid: '楕円体高',
-}
 
 function deg2dms(deg) {
     let x = Math.round(Math.abs(deg) * 36000);
@@ -303,7 +300,7 @@ const GPS = {
         if (params.heading == null && dh != null) {
             params.heading = dh.heading;
         };
-        if (selRef.value == 'none' || params.latitude == null) {
+        if (!cbRef.checked || params.latitude == null) {
             params.undulation = null;
         } else {
             params.undulation = EGM2008.getUndulation(params);
@@ -364,43 +361,41 @@ const GPS = {
 
         // altitude
         parts.splice(0);
-        parts.push(`<b>${REFS[selRef.value]}:</b> `)
-        if (params.altitude == null) {
-            parts.push('- ' + lengthUnit.label);
+        if (cbRef.checked) {
+            parts.push('<b>楕円体高</b>:')
         } else {
-            parts.push((GPS.params.altitude / lengthUnit.scale).toFixed());
-            if (GPS.params.altitudeAccuracy != null) {
-                parts.push(' ± ' + (GPS.params.altitudeAccuracy / lengthUnit.scale).toFixed());
-            };
-            parts.push(' ' + lengthUnit.label);
+            parts.push('<b>標高</b>:')
         };
-        if (selRef.value == 'none') {
-            spanAlt2.textContent = '';
+        if (params.altitude == null) {
+            parts.push('-');
         } else {
-            parts.push(', <b>')
-            if (selRef.value == 'geoid') {
-                parts.push(REFS.ellipsoid);
-            } else {
-                parts.push(REFS.geoid);
-            }
-            parts.push(':</b> ');
-            spanAlt2.textContent = `- ${lengthUnit.label}`;
+            parts.push((params.altitude / lengthUnit.scale).toFixed());
+            if (params.altitudeAccuracy != null) {
+                parts.push('± ' + (params.altitudeAccuracy / lengthUnit.scale).toFixed());
+            };
+        };
+        parts.push(lengthUnit.label);
+        if (cbRef.checked) {
+            parts.push(', <b>標高</b>:')
+            spanAlt1.innerHTML = parts.join(' ');
             if (params.altitude != null && params.undulation != null) {
+                spanAlt2.textContent = '取得中…';
                 params.undulation.then(und => {
                     const parts = [];
-                    let alt2 = params.altitude;
-                    if (selRef.value == 'geoid') {
-                        alt2 += und;
-                    } else {
-                        alt2 -= und;
-                    }
+                    let alt2 = params.altitude - und;
                     parts.push((alt2 / lengthUnit.scale).toFixed());
-                    parts.push(' ' + lengthUnit.label);
-                    spanAlt2.innerHTML = parts.join('');
-                }).catch();
-            }
+                    parts.push(lengthUnit.label);
+                    spanAlt2.innerText = parts.join(' ');
+                }).catch(() => {
+                    spanAlt2.textContent = '取得失敗'
+                })
+            } else {
+                spanAlt2.textContent = '- ' + lengthUnit.label;
+            };
+        } else {
+            spanAlt1.innerHTML = parts.join(' ');
+            spanAlt2.textContent = '';
         };
-        spanAlt1.innerHTML = parts.join('');
 
         spanAddress.hidden = !cbAddress.checked;
         // address

@@ -10,7 +10,7 @@ const spanAlt2 = document.getElementById('alt2');
 const cbHighAcc = document.getElementById('highacc-cb');
 const selSpeed = document.getElementById('speed-sel');
 const selLength = document.getElementById('length-sel');
-const selRef = document.getElementById('ref-sel');
+const cbRef = document.getElementById('ref-cb');
 
 const UNITS = {
     speed: {
@@ -28,9 +28,6 @@ const COMPASS = [
     'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
     'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N',
 ];
-const REFS = {
-    none: 'Height', geoid: 'Altitude', ellipsoid: 'Ellipsoidal',
-}
 
 function deg2dms(deg) {
     let x = Math.round(Math.abs(deg) * 36000);
@@ -176,18 +173,18 @@ const GPS = {
             console.log('GPS paused');
         }
     },
-    once: function() {
+    once: function () {
         const options = {
             enableHighAccuracy: cbHighAcc.checked
         };
-        navigator.geolocation.getCurrentPosition(this.onSuccess,this.onerror,options);
+        navigator.geolocation.getCurrentPosition(this.onSuccess, this.onerror, options);
         startStopBtn.disabled = true;
         onceBtn.disabled = true;
         spanLatLon.textContent = 'Retrieving position...';
         cbHighAcc.disabled = true;
         console.log('GPS once');
     },
-    onceEnd: function() {
+    onceEnd: function () {
         if (startStopBtn.disabled) {
             startStopBtn.disabled = false;
             onceBtn.disabled = false;
@@ -212,7 +209,7 @@ const GPS = {
         if (params.heading == null && dh != null) {
             params.heading = dh.heading;
         };
-        if (selRef.value == 'none' || params.latitude == null) {
+        if (!cbRef.checked || params.latitude == null) {
             params.undulation = null;
         } else {
             params.undulation = EGM2008.getUndulation(params);
@@ -268,43 +265,41 @@ const GPS = {
 
         // altitude
         parts.splice(0);
-        parts.push(`<b>${REFS[selRef.value]}:</b> `)
-        if (params.altitude == null) {
-            parts.push('- ' + lengthUnit.label);
+        if (cbRef.checked) {
+            parts.push('<b>Ellipsoidal</b>:')
         } else {
-            parts.push((GPS.params.altitude / lengthUnit.scale).toFixed());
-            if (GPS.params.altitudeAccuracy != null) {
-                parts.push(' ± ' + (GPS.params.altitudeAccuracy / lengthUnit.scale).toFixed());
-            };
-            parts.push(' ' + lengthUnit.label);
+            parts.push('<b>Altitude</b>:')
         };
-        if (selRef.value == 'none') {
-            spanAlt2.textContent = '';
+        if (params.altitude == null) {
+            parts.push('-');
         } else {
-            parts.push(', <b>')
-            if (selRef.value == 'geoid') {
-                parts.push(REFS.ellipsoid);
-            } else {
-                parts.push(REFS.geoid);
-            }
-            parts.push(':</b> ');
-            spanAlt2.textContent = `- ${lengthUnit.label}`;
+            parts.push((params.altitude / lengthUnit.scale).toFixed());
+            if (params.altitudeAccuracy != null) {
+                parts.push('± ' + (params.altitudeAccuracy / lengthUnit.scale).toFixed());
+            };
+        };
+        parts.push(lengthUnit.label);
+        if (cbRef.checked) {
+            parts.push(', <b>Altitude</b>:')
+            spanAlt1.innerHTML = parts.join(' ');
             if (params.altitude != null && params.undulation != null) {
+                spanAlt2.textContent = 'loading';
                 params.undulation.then(und => {
                     const parts = [];
-                    let alt2 = params.altitude;
-                    if (selRef.value == 'geoid') {
-                        alt2 += und;
-                    } else {
-                        alt2 -= und;
-                    }
+                    let alt2 = params.altitude - und;
                     parts.push((alt2 / lengthUnit.scale).toFixed());
-                    parts.push(' ' + lengthUnit.label);
-                    spanAlt2.innerHTML = parts.join('');
-                }).catch();
-            }
+                    parts.push(lengthUnit.label);
+                    spanAlt2.innerText = parts.join(' ');
+                }).catch(() => {
+                    spanAlt2.textContent = 'not available'
+                })
+            } else {
+                spanAlt2.textContent = '- ' + lengthUnit.label;
+            };
+        } else {
+            spanAlt1.innerHTML = parts.join(' ');
+            spanAlt2.textContent = '';
         };
-        spanAlt1.innerHTML = parts.join('');
     },
     moveTo: function (lat = null, lon = null, alt = null) {
         const params = {

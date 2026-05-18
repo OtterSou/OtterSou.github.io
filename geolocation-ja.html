@@ -14,18 +14,14 @@
     <p>
         <span id="latlon" style="white-space: pre-line;">上のボタンを押してください</span><br>
         <b>速度:</b> <span id="speed"></span><br>
-        <span id="alt1"></span><span id="alt2"></span><br>
+        <span id="alt1"></span> <span id="alt2"></span><br>
         <span id="address" style="line-height: 2;" hidden></span>
     </p>
     <p>
         <input type="checkbox" id="highacc-cb"><label for="highacc-cb">高精度</label><br>
         単位: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
         <select id="length-sel" onchange="GPS.updateDisplay();"></select><br>
-        高度補正: <select id="ref-sel" onchange="GPS.updateDisplay();">
-            <option value="none">補正なし</option>
-            <option value="geoid">標高 → 楕円体高</option>
-            <option value="ellipsoid">楕円体高 → 標高</option>
-        </select><br>
+        <input type="checkbox" id="ref-cb" onchange="GPS.updateDisplay();"><label for="ref-cb">楕円体高を標高に補正</label><br>
         <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();">
         <label for="address-cb">住所を表示</label>
     </p>
