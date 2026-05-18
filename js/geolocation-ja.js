@@ -153,6 +153,11 @@ const EGM2008 = {
 }
 
 const AddressFinder = {
+    last: {
+        x: null,
+        y: null,
+        tile: null,
+    },
     isPointInPolygon: function (x, y, poly) {
         let wn = 0;
         let p1 = poly[0];
@@ -211,6 +216,8 @@ const AddressFinder = {
         const txy = latlon2tile(latlon, 14);
         if (!(txy.x >= 13786 && txy.x <= 15200 && txy.y >= 5857 && txy.y <= 7242)) {
             return Promise.resolve(this.formatFeature(null));
+        } else if (txy.x == this.last.x && txy.y == this.last.y) {
+            return Promise.resolve(this.getFeatureInTile(latlon, this.last.tile)).then(this.formatFeature);
         };
         const url = `https://cyberjapandata.gsi.go.jp/xyz/lv01_plg/14/${txy.x}/${txy.y}.geojson`;
         return CachedRequest.fetch(url)
@@ -221,7 +228,12 @@ const AddressFinder = {
                     throw new Error('failed to fetch address tile');
                 };
             })
-            .then(tile => this.getFeatureInTile(latlon, tile))
+            .then(tile => {
+                this.last.x = txy.x;
+                this.last.y = txy.y;
+                this.last.tile = tile;
+                return this.getFeatureInTile(latlon, tile);
+            })
             .then(this.formatFeature);
     },
 }
