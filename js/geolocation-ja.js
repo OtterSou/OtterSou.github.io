@@ -153,11 +153,6 @@ const EGM2008 = {
 }
 
 const AddressFinder = {
-    last: {
-        x: null,
-        y: null,
-        tile: null,
-    },
     isPointInPolygon: function (x, y, poly) {
         let wn = 0;
         let p1 = poly[0];
@@ -193,10 +188,10 @@ const AddressFinder = {
         };
         return false;
     },
-    getFeatureInTile: function (x, y, tile) {
+    getFeatureInTile: function (latlon, tile) {
         if (tile == null) return null;
         for (const feat of tile.features) {
-            if (this.isPointInFeature(x, y, feat)) {
+            if (this.isPointInFeature(latlon.longitude, latlon.latitude, feat)) {
                 return feat;
             };
         };
@@ -204,7 +199,7 @@ const AddressFinder = {
     },
     formatFeature: function (feat) {
         if (feat == null) {
-            return '-';
+            return 'なし';
         } else {
             const props = feat.properties;
             return `<ruby>${props.pref}<rt>${props.pref_kana}</rt></ruby> \
@@ -213,13 +208,9 @@ const AddressFinder = {
         };
     },
     findAddress: function (latlon) {
-        const lat = latlon.latitude;
-        const lon = latlon.longitude;
         const txy = latlon2tile(latlon, 14);
         if (!(txy.x >= 13786 && txy.x <= 15200 && txy.y >= 5857 && txy.y <= 7242)) {
-            return Promise.reject(new Error('ouside Japan'));
-        } else if (txy.x == this.last.x && txy.y == this.last.y) {
-            return Promise.resolve(this.getFeatureInTile(lon, lat, this.last.tile)).then(this.formatFeature);
+            return Promise.resolve(this.formatFeature(null));
         };
         const url = `https://cyberjapandata.gsi.go.jp/xyz/lv01_plg/14/${txy.x}/${txy.y}.geojson`;
         return CachedRequest.fetch(url)
@@ -230,14 +221,8 @@ const AddressFinder = {
                     throw new Error('failed to fetch address tile');
                 };
             })
-            .then(tile => {
-                this.last.x = txy.x;
-                this.last.y = txy.y;
-                this.last.tile = tile;
-                return this.getFeatureInTile(lon, lat, tile);
-            })
-            .then(this.formatFeature)
-            .catch(console.error);
+            .then(tile => this.getFeatureInTile(latlon, tile))
+            .then(this.formatFeature);
     },
 }
 
@@ -386,9 +371,10 @@ const GPS = {
                     parts.push((alt2 / lengthUnit.scale).toFixed());
                     parts.push(lengthUnit.label);
                     spanAlt2.innerText = parts.join(' ');
-                }).catch(() => {
+                }).catch(err => {
                     spanAlt2.textContent = '取得失敗'
-                })
+                    console.error(err);
+                });
             } else {
                 spanAlt2.textContent = '- ' + lengthUnit.label;
             };
@@ -402,10 +388,12 @@ const GPS = {
         if (params.address == null) {
             spanAddress.innerHTML = '<b>住所:</b> -';
         } else {
+            spanAddress.innerHTML = '<b>住所:</b> 取得中';
             params.address.then(addr => {
                 spanAddress.innerHTML = '<b>住所:</b> ' + addr;
-            }).catch(e => {
-                spanAddress.innerHTML = '<b>住所:</b> -';
+            }).catch(err => {
+                spanAddress.innerHTML = '<b>住所:</b> 取得失敗';
+                console.error(err);
             })
         }
 
