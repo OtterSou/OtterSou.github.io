@@ -240,7 +240,7 @@ const GPS = {
             this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, options);
             startStopBtn.textContent = '停止';
             onceBtn.disabled = true;
-            spanLatLon.textContent = '現在地取得中…';
+            spanLatLon.textContent = '位置取得中';
             console.log('GPS started');
         } else {
             navigator.geolocation.clearWatch(this.id);
@@ -256,7 +256,7 @@ const GPS = {
         navigator.geolocation.getCurrentPosition(this.onSuccess, this.onerror, options);
         startStopBtn.disabled = true;
         onceBtn.disabled = true;
-        spanLatLon.textContent = '現在地取得中…';
+        spanLatLon.textContent = '位置取得中';
         cbHighAcc.disabled = true;
         console.log('GPS once');
     },
@@ -336,7 +336,7 @@ const GPS = {
             parts.push(' ' + speedUnit.label);
             parts.push(params.realSpeed ? '' : '*');
             if (params.heading != null && params.speed >= 1.0) {
-                parts.push(' ' + params.heading.toFixed() + '°');
+                parts.push(', ' + params.heading.toFixed() + '°');
                 let compass = COMPASS[Math.round(params.heading / 22.5)];
                 parts.push(' (' + compass + ')');
                 parts.push(params.realHeading ? '' : '*');

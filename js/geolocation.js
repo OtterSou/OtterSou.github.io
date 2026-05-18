@@ -164,7 +164,7 @@ const GPS = {
             this.id = navigator.geolocation.watchPosition(this.onSuccess, this.onError, options);
             startStopBtn.textContent = 'Stop';
             onceBtn.disabled = true;
-            spanLatLon.textContent = 'Retrieving position...';
+            spanLatLon.textContent = 'Loading position';
             console.log('GPS started');
         } else {
             navigator.geolocation.clearWatch(this.id);
@@ -180,7 +180,7 @@ const GPS = {
         navigator.geolocation.getCurrentPosition(this.onSuccess, this.onerror, options);
         startStopBtn.disabled = true;
         onceBtn.disabled = true;
-        spanLatLon.textContent = 'Retrieving position...';
+        spanLatLon.textContent = 'Loading position';
         cbHighAcc.disabled = true;
         console.log('GPS once');
     },
@@ -255,7 +255,7 @@ const GPS = {
             parts.push(' ' + speedUnit.label);
             parts.push(params.realSpeed ? '' : '*');
             if (params.heading != null && params.speed >= 1.0) {
-                parts.push(' ' + params.heading.toFixed() + '°');
+                parts.push(', ' + params.heading.toFixed() + '°');
                 let compass = COMPASS[Math.round(params.heading / 22.5)];
                 parts.push(' (' + compass + ')');
                 parts.push(params.realHeading ? '' : '*');
