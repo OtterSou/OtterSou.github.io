@@ -359,30 +359,30 @@ const GPS = {
         // altitude
         parts.splice(0);
         if (cbRef.checked) {
-            parts.push('<b>楕円体高:</b>')
+            parts.push('<b>楕円体高:</b> ')
         } else {
-            parts.push('<b>標高:</b>')
+            parts.push('<b>標高:</b> ')
         };
         if (params.altitude == null) {
             parts.push('-');
         } else {
             parts.push((params.altitude / lengthUnit.scale).toFixed());
             if (params.altitudeAccuracy != null) {
-                parts.push('± ' + (params.altitudeAccuracy / lengthUnit.scale).toFixed());
+                parts.push(' ± ' + (params.altitudeAccuracy / lengthUnit.scale).toFixed());
             };
         };
-        parts.push(lengthUnit.label);
+        parts.push(' ' + lengthUnit.label);
         if (cbRef.checked) {
             parts.push(', <b>標高:</b>')
-            spanAlt1.innerHTML = parts.join(' ');
+            spanAlt1.innerHTML = parts.join('');
             if (params.altitude != null && params.undulation != null) {
                 spanAlt2.textContent = '取得中';
                 params.undulation.then(und => {
                     const parts = [];
                     let alt2 = params.altitude - und;
                     parts.push((alt2 / lengthUnit.scale).toFixed());
-                    parts.push(lengthUnit.label);
-                    spanAlt2.innerText = parts.join(' ');
+                    parts.push(' ' + lengthUnit.label);
+                    spanAlt2.innerText = parts.join('');
                 }).catch(err => {
                     spanAlt2.textContent = '取得失敗'
                     console.error(err);
@@ -391,7 +391,7 @@ const GPS = {
                 spanAlt2.textContent = '- ' + lengthUnit.label;
             };
         } else {
-            spanAlt1.innerHTML = parts.join(' ');
+            spanAlt1.innerHTML = parts.join('');
             spanAlt2.textContent = '';
         };
 

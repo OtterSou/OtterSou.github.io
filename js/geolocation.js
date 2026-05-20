@@ -266,30 +266,30 @@ const GPS = {
         // altitude
         parts.splice(0);
         if (cbRef.checked) {
-            parts.push('<b>Ellipsoidal:</b>')
+            parts.push('<b>Ellipsoidal:</b> ')
         } else {
-            parts.push('<b>Altitude:</b>')
+            parts.push('<b>Altitude:</b> ')
         };
         if (params.altitude == null) {
             parts.push('-');
         } else {
             parts.push((params.altitude / lengthUnit.scale).toFixed());
             if (params.altitudeAccuracy != null) {
-                parts.push('± ' + (params.altitudeAccuracy / lengthUnit.scale).toFixed());
+                parts.push(' ± ' + (params.altitudeAccuracy / lengthUnit.scale).toFixed());
             };
         };
-        parts.push(lengthUnit.label);
+        parts.push(' ' + lengthUnit.label);
         if (cbRef.checked) {
             parts.push(', <b>Altitude:</b>')
-            spanAlt1.innerHTML = parts.join(' ');
+            spanAlt1.innerHTML = parts.join('');
             if (params.altitude != null && params.undulation != null) {
                 spanAlt2.textContent = 'loading';
                 params.undulation.then(und => {
                     const parts = [];
                     let alt2 = params.altitude - und;
                     parts.push((alt2 / lengthUnit.scale).toFixed());
-                    parts.push(lengthUnit.label);
-                    spanAlt2.innerText = parts.join(' ');
+                    parts.push(' ' + lengthUnit.label);
+                    spanAlt2.innerText = parts.join('');
                 }).catch(() => {
                     spanAlt2.textContent = 'not available'
                 })
@@ -297,7 +297,7 @@ const GPS = {
                 spanAlt2.textContent = '- ' + lengthUnit.label;
             };
         } else {
-            spanAlt1.innerHTML = parts.join(' ');
+            spanAlt1.innerHTML = parts.join('');
             spanAlt2.textContent = '';
         };
     },
