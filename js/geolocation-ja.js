@@ -13,6 +13,10 @@ const selSpeed = document.getElementById('speed-sel');
 const selLength = document.getElementById('length-sel');
 const cbRef = document.getElementById('ref-cb');
 const cbAddress = document.getElementById('address-cb');
+const cbLog = document.getElementById('log-cb');
+const spanLogCount = document.getElementById('log-count');
+const btnLogDownload = document.getElementById('log-download-btn');
+const btnLogDelete = document.getElementById('log-delete-btn');
 
 const UNITS = {
     speed: {
@@ -30,6 +34,14 @@ const COMPASS = [
     '北', '北北東', '北東', '東北東', '東', '東南東', '南東', '南南東',
     '南', '南南西', '南西', '西南西', '西', '西北西', '北西', '北北西', '北',
 ];
+const FIELDS = [
+    'timestamp', 'timestampMs', 'latitude', 'longitude', 'altitude',
+    'accuracy', 'altitudeAccuracy', 'speed', 'heading'
+];
+const FIELD_TRANSFORM = {
+    timestamp: (c) => new Date(c.timestamp).toISOString(),
+    timestampMs: (c) => c.timestamp,
+};
 
 function deg2dms(deg) {
     let x = Math.round(Math.abs(deg) * 36000);
@@ -66,6 +78,20 @@ function latlon2tile(latlon, z) {
         px: Math.floor(wx - tx * 256),
         py: Math.floor(wy - ty * 256),
     };
+}
+
+function downloadString(content, filename, mimeType = 'text/plain') {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 const CachedRequest = {
@@ -242,9 +268,12 @@ const GPS = {
     isActive: false,
     id: null,
     params: null,
+    log: null,
     toggleActive: function () {
         this.isActive = !this.isActive;
         cbHighAcc.disabled = this.isActive;
+        cbLog.disabled = this.isActive;
+        btnLogDownload.disabled = this.isActive || this.log.length == 0;
         const options = {
             enableHighAccuracy: cbHighAcc.checked
         };
@@ -270,6 +299,8 @@ const GPS = {
         onceBtn.disabled = true;
         spanLatLon.textContent = '位置取得中';
         cbHighAcc.disabled = true;
+        cbLog.disabled = true;
+        btnLogDownload.disabled = true;
         console.log('GPS once');
     },
     onceEnd: function () {
@@ -277,11 +308,16 @@ const GPS = {
             startStopBtn.disabled = false;
             onceBtn.disabled = false;
             cbHighAcc.disabled = false;
+            cbLog.disabled = false;
+            btnLogDownload.disabled = this.log.length == 0;
         };
     },
     onSuccess: function (pos) {
         const params = pos.toJSON().coords;
         params.timestamp = pos.timestamp;
+        if (params.latitude != null && cbLog.checked) {
+            GPS.log.push({ ...params });
+        }
         let dh = null;
         if (GPS.params == null || params.latitude == null || GPS.params.latitude == null) {
             params.dt = null;
@@ -409,6 +445,9 @@ const GPS = {
             })
         }
 
+        // log count
+        spanLogCount.textContent = GPS.log.length + '件';
+        btnLogDelete.disabled = GPS.log.length == 0;
     },
     moveTo: function (lat = null, lon = null, alt = null) {
         const params = {
@@ -426,6 +465,29 @@ const GPS = {
         params.toJSON = () => params;
         this.onSuccess(params);
     },
+    downloadLog: function () {
+        const out = [FIELDS.join(',') + '\n',];
+        for (let pos of this.log) {
+            const row = [];
+            for (let field of FIELDS) {
+                if (FIELD_TRANSFORM.hasOwnProperty(field)) {
+                    row.push(FIELD_TRANSFORM[field](pos));
+                } else if (pos[field] == null) {
+                    row.push('');
+                } else {
+                    row.push(pos[field]);
+                }
+            }
+            out.push(row.join(',') + '\n');
+        }
+        const filename = Date.now() + '.csv';
+        console.log(out.join(''));
+        downloadString(out.join(''), filename);
+    },
+    deleteLog: function () {
+        this.log = [];
+        this.updateDisplay();
+    },
 };
 
 for (const k in UNITS.speed) {
@@ -440,4 +502,6 @@ for (const k in UNITS.alt) {
     elem.textContent = UNITS.alt[k].label;
     selLength.appendChild(elem);
 }
+
+GPS.deleteLog();
 GPS.moveTo();
