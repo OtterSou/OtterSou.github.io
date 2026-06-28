@@ -316,8 +316,18 @@ const GPS = {
         const params = pos.toJSON().coords;
         params.timestamp = pos.timestamp;
         if (params.latitude != null && cbLog.checked) {
-            GPS.log.push({ ...params });
-        }
+            const row = [];
+            for (let field of FIELDS) {
+                if (FIELD_TRANSFORM.hasOwnProperty(field)) {
+                    row.push(FIELD_TRANSFORM[field](params));
+                } else if (params[field] == null) {
+                    row.push('');
+                } else {
+                    row.push(params[field]);
+                }
+            }
+            GPS.log.push(row.join(',') + '\n');
+        };
         let dh = null;
         if (GPS.params == null || params.latitude == null || GPS.params.latitude == null) {
             params.dt = null;
@@ -466,23 +476,10 @@ const GPS = {
         this.onSuccess(params);
     },
     downloadLog: function () {
-        const out = [FIELDS.join(',') + '\n',];
-        for (let pos of this.log) {
-            const row = [];
-            for (let field of FIELDS) {
-                if (FIELD_TRANSFORM.hasOwnProperty(field)) {
-                    row.push(FIELD_TRANSFORM[field](pos));
-                } else if (pos[field] == null) {
-                    row.push('');
-                } else {
-                    row.push(pos[field]);
-                }
-            }
-            out.push(row.join(',') + '\n');
-        }
         const filename = Date.now() + '.csv';
-        console.log(out.join(''));
-        downloadString(out.join(''), filename);
+        const out = FIELDS.join(',') + '\n' + this.log.join('');
+        console.log(out);
+        downloadString(out, filename);
     },
     deleteLog: function () {
         this.log = [];
