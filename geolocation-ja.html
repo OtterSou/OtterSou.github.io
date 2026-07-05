@@ -3,6 +3,12 @@
 
 <head>
     <title>GPS現在地</title>
+    <style>
+        body.dark {
+            background-color: black;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
@@ -25,8 +31,9 @@
         <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();"><label for="address-cb">住所を表示</label><br>
         <input type="checkbox" id="log-cb"><label for="log-cb">記録</label>
         <span id="log-count">0件</span>
-        <button id="log-download-btn" onclick="GPS.downloadLog()" disabled>CSVダウンロード</button>
-        <button id="log-delete-btn" onclick="GPS.deleteLog()" disabled>削除</button>
+        <button id="log-download-btn" onclick="GPS.downloadLog();" disabled>CSVダウンロード</button>
+        <button id="log-delete-btn" onclick="GPS.deleteLog();" disabled>削除</button><br>
+        <button onclick="toggleBackground();">背景色切り替え</button>
     </p>
     <p>
         ジオイドモデル: <a href="https://earth-info.nga.mil/">アメリカ国家地理空間情報局</a> EGM2008を<a href="https://github.com/OtterSou/tile">XYZタイルに加工</a><br>

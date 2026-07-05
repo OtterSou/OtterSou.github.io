@@ -66,6 +66,10 @@ function latlon2tile(latlon, z) {
     };
 }
 
+function toggleBackground() {
+    document.body.classList.toggle('dark');
+}
+
 const CachedRequest = {
     cache: new Map(),
     fetch: function (url) {

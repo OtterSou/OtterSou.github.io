@@ -94,6 +94,10 @@ function downloadString(content, filename, mimeType = 'text/plain') {
     URL.revokeObjectURL(url);
 }
 
+function toggleBackground() {
+    document.body.classList.toggle('dark');
+}
+
 const CachedRequest = {
     cache: new Map(),
     fetch: function (url) {

@@ -3,6 +3,12 @@
 
 <head>
     <title>Geolocation / Speedometer</title>
+    <style>
+        body.dark {
+            background-color: black;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
@@ -20,7 +26,8 @@
         <input type="checkbox" id="highacc-cb"><label for="highacc-cb">High accuracy</label><br>
         Units: <select id="speed-sel" onchange="GPS.updateDisplay();"></select>
         <select id="length-sel" onchange="GPS.updateDisplay();"></select><br>
-        <input type="checkbox" id="ref-cb" onchange="GPS.updateDisplay();"><label for="ref-cb">Correct ellipsoidal height to altitude</label>
+        <input type="checkbox" id="ref-cb" onchange="GPS.updateDisplay();"><label for="ref-cb">Correct ellipsoidal height to altitude</label><br>
+        <button onclick="toggleBackground();">Toggle background</button>
     </p>
     <p>
         Geoid height from EGM2008 by <a href="https://earth-info.nga.mil/">US National Geospatial-Intelligence
