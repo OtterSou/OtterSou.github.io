@@ -29,10 +29,6 @@
         <select id="length-sel" onchange="GPS.updateDisplay();"></select><br>
         <input type="checkbox" id="ref-cb" onchange="GPS.updateDisplay();"><label for="ref-cb">楕円体高を標高に補正</label><br>
         <input type="checkbox" id="address-cb" onchange="GPS.updateDisplay();"><label for="address-cb">住所を表示</label><br>
-        <input type="checkbox" id="log-cb"><label for="log-cb">記録</label>
-        <span id="log-count">0件</span>
-        <button id="log-download-btn" onclick="GPS.downloadLog();" disabled>CSVダウンロード</button>
-        <button id="log-delete-btn" onclick="GPS.deleteLog();" disabled>削除</button><br>
         <button onclick="toggleBackground();">背景色切り替え</button>
     </p>
     <p>
