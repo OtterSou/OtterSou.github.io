@@ -13,10 +13,6 @@ const selSpeed = document.getElementById('speed-sel');
 const selLength = document.getElementById('length-sel');
 const cbRef = document.getElementById('ref-cb');
 const cbAddress = document.getElementById('address-cb');
-const cbLog = document.getElementById('log-cb');
-const spanLogCount = document.getElementById('log-count');
-const btnLogDownload = document.getElementById('log-download-btn');
-const btnLogDelete = document.getElementById('log-delete-btn');
 
 const UNITS = {
     speed: {
@@ -78,20 +74,6 @@ function latlon2tile(latlon, z) {
         px: Math.floor(wx - tx * 256),
         py: Math.floor(wy - ty * 256),
     };
-}
-
-function downloadString(content, filename, mimeType = 'text/plain') {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
 }
 
 function toggleBackground() {
@@ -272,12 +254,9 @@ const GPS = {
     isActive: false,
     id: null,
     params: null,
-    log: null,
     toggleActive: function () {
         this.isActive = !this.isActive;
         cbHighAcc.disabled = this.isActive;
-        cbLog.disabled = this.isActive;
-        btnLogDownload.disabled = this.isActive || this.log.length == 0;
         const options = {
             enableHighAccuracy: cbHighAcc.checked
         };
@@ -303,8 +282,6 @@ const GPS = {
         onceBtn.disabled = true;
         spanLatLon.textContent = '位置取得中';
         cbHighAcc.disabled = true;
-        cbLog.disabled = true;
-        btnLogDownload.disabled = true;
         console.log('GPS once');
     },
     onceEnd: function () {
@@ -312,26 +289,11 @@ const GPS = {
             startStopBtn.disabled = false;
             onceBtn.disabled = false;
             cbHighAcc.disabled = false;
-            cbLog.disabled = false;
-            btnLogDownload.disabled = this.log.length == 0;
         };
     },
     onSuccess: function (pos) {
         const params = pos.toJSON().coords;
         params.timestamp = pos.timestamp;
-        if (params.latitude != null && cbLog.checked) {
-            const row = [];
-            for (let field of FIELDS) {
-                if (FIELD_TRANSFORM.hasOwnProperty(field)) {
-                    row.push(FIELD_TRANSFORM[field](params));
-                } else if (params[field] == null) {
-                    row.push('');
-                } else {
-                    row.push(params[field]);
-                }
-            }
-            GPS.log.push(row.join(',') + '\n');
-        };
         let dh = null;
         if (GPS.params == null || params.latitude == null || GPS.params.latitude == null) {
             params.dt = null;
@@ -458,10 +420,6 @@ const GPS = {
                 console.error(err);
             })
         }
-
-        // log count
-        spanLogCount.textContent = GPS.log.length + '件';
-        btnLogDelete.disabled = GPS.log.length == 0;
     },
     moveTo: function (lat = null, lon = null, alt = null) {
         const params = {
@@ -479,16 +437,6 @@ const GPS = {
         params.toJSON = () => params;
         this.onSuccess(params);
     },
-    downloadLog: function () {
-        const filename = Date.now() + '.csv';
-        const out = FIELDS.join(',') + '\n' + this.log.join('');
-        console.log(out);
-        downloadString(out, filename);
-    },
-    deleteLog: function () {
-        this.log = [];
-        this.updateDisplay();
-    },
 };
 
 for (const k in UNITS.speed) {
@@ -504,5 +452,4 @@ for (const k in UNITS.alt) {
     selLength.appendChild(elem);
 }
 
-GPS.deleteLog();
 GPS.moveTo();
