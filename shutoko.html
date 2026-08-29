@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <title>首都高料金早見表</title>
+        <style>
+            div {
+                margin: 10px 0;
+            }
+            table {
+                border-spacing: 0;
+            }
+            th {
+                text-align: left;
+            }
+            tr > td:nth-of-type(2) {
+                text-align: right;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>首都高料金早見表</h1>
+        <div id="settings" onchange="update()">
+            <b>車種</b>: <input type="radio" name="type" id="compact" value="compact" /><label for="compact"
+                >軽・二輪</label
+            >
+            <input type="radio" name="type" id="standard" value="standard" checked /><label for="standard"
+                >普通車</label
+            >
+            <input type="radio" name="type" id="middle" value="middle" /><label for="middle">中型車</label>
+            <input type="radio" name="type" id="large" value="large" /><label for="large">大型車</label>
+            <input type="radio" name="type" id="extra" value="extra" /><label for="extra">特大車</label><br />
+            (2026年10月1日～)<input type="radio" name="type" id="compact2" value="compact2" /><label for="compact2"
+                >軽・二輪</label
+            >
+            <input type="radio" name="type" id="standard2" value="standard2" /><label for="standard2">普通車</label
+            ><br />
+            (2027年7月1日～)<input type="radio" name="type" id="middle2" value="middle2" /><label for="middle2"
+                >中型車</label
+            >
+            <input type="radio" name="type" id="large2" value="large2" /><label for="large2">大型車</label>
+            <input type="radio" name="type" id="extra2" value="extra2" /><label for="extra2">特大車</label><br />
+            <input type="checkbox" id="latenight" /><label for="latenight">深夜割引</label><br />
+            <!-- 入口の表示順:
+                <input type="radio" name="entsort" id="entroute" value="route" checked /><label for="entroute"
+                    >路線</label
+                >
+                <input type="radio" name="entsort" id="entname" value="name" checked /><label for="entname">名前</label
+                ><br /> -->
+            出口の表示順:
+            <!-- <input type="radio" name="exitsort" id="exitroute" value="route" checked /><label for="exitroute"
+                    >路線</label
+                > -->
+            <input type="radio" name="exitsort" id="exitname" value="name" checked /><label for="exitname">名前</label>
+            <input type="radio" name="exitsort" id="exittoll" value="toll" /><label for="exittoll">料金</label><br />
+            <b>入口</b>:
+            <select id="entrance"></select>
+        </div>
+        <div>
+            <table>
+                <thead>
+                    <th>出口</th>
+                    <th>料金</th>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+        <div>
+            <b>注意事項</b>
+            <ul>
+                <li>2026年現在</li>
+                <li>作者は当サイトの内容によって生じた損害について一切の責任を負いません。</li>
+                <li>
+                    割引は深夜割引と都心流入割引のみ対応しています。<br />その他の割引を含めた料金は<a
+                        href="https://search.shutoko.jp/"
+                        >料金・ルート案内</a
+                    >をご確認ください。
+                </li>
+            </ul>
+        </div>
+        <script src="./js/shutoko.js"></script>
+    </body>
+</html>
