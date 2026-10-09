@@ -1,26 +1,22 @@
 'use strict';
 
 const RATE = {
-    compact: 23.616,
-    standard: 29.520,
+    compact: 25.9776,
+    standard: 32.4720,
     middle: 35.424,
     large: 48.708,
     extra: 81.180,
-    compact2: 25.9776,
-    standard2: 32.4720,
     middle2: 38.9664,
     large2: 53.5788,
     extra2: 89.2980,
 };
 
 const MIN_DIST = {
-    compact: 43,
-    standard: 43,
+    compact: 39,
+    standard: 39,
     middle: 43,
     large: 43,
     extra: 43,
-    compact2: 39,
-    standard2: 39,
     middle2: 39,
     large2: 39,
     extra2: 39,
