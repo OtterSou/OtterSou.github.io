@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Bitrate Calculator</title>
+    </head>
+    <body>
+        <h1>Bitrate Calculator</h1>
+        <div id="config">
+            <b>Output:</b>
+            <input type="radio" name="info" id="bit" value="bit" />
+            <label for="bit">bit</label>
+            <input type="radio" name="info" id="byte" value="byte" checked />
+            <label for="byte">byte</label>
+            <input type="checkbox" id="binary" />
+            <label for="binary">binary prefix</label>
+            <input type="checkbox" id="dectime" />
+            <label for="dectime">decimal time</label>
+        </div>
+        <div>
+            <input type="text" id="expr" size="50" /><br />
+            <span id="result">Enter an expression</span><br />
+        </div>
+        <h2>Examples</h2>
+        (Click on an item to see its answer)
+        <ul id="examples">
+            <li data-text="128kbps*1h">What's the file size of an hour-long 128 kbps audio file?</li>
+            <li data-text="44100/s*16b*2">What's the bitrate of 44.1 kHz 16 bit stereo wav file?</li>
+            <li data-text="10GiB/100Mbps">How long does it take to download a 10 GiB file on a 100 Mbps connection?</li>
+            <li data-text="(100MiB/3m-192kbps)/kbps">
+                I want a 3-minute long video with 192 kbps audio in under 100 MiB. How high can the video bitrate be in
+                kbps?
+            </li>
+        </ul>
+        <h2>Syntax</h2>
+        <ul>
+            <li><code>(</code> <code>)</code></li>
+            <li>binary operator: <code>+ - * /</code></li>
+            <li>unary operator: <code>+ -</code></li>
+            <li>number: integer or decimal</li>
+            <li>
+                time unit: <code>h m s</code>
+                <ul>
+                    <li>can be concatenated e.g. <code>1m30s = 90s</code></li>
+                </ul>
+            </li>
+            <li>
+                prefix: <code>k ki K Ki M Mi G Gi T Ti</code>
+                <ul>
+                    <li>
+                        1000<sup>n</sup> without <code>i</code>, 1024<sup>n</sup> with <code>i</code>, except
+                        <code>K</code> is 1024
+                    </li>
+                </ul>
+            </li>
+            <li>information unit: <code>b B</code></li>
+            <li>bitrate: information unit followed by <code>ps</code></li>
+            <li>bare units have a value of 1 e.g. <code>1kb/s = 1kb/1s = 1kbps</code></li>
+        </ul>
+        <script src="./js/bitrate.js"></script>
+    </body>
+</html>
